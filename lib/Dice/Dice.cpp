@@ -1,4 +1,4 @@
-#include "Dice.h"
+/*#include "Dice.h"
 
 void Dice::update()
 {
@@ -94,4 +94,4 @@ void Dice::turn_on()
 void Dice::turn_off()
 {
     Elements::dice_strip.clear();
-}
+}*/

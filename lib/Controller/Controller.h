@@ -4,12 +4,20 @@
 #include "Player.h"
 #include "Dice.h"
 
-enum game_state{player1, player2, player3, player4, select_color_state};
+enum game_state
+{
+  player1,
+  player2,
+  player3,
+  player4,
+  select_color_state
+};
 
-class Controller{
-  static int16_t buttons16;
-  static PCF8575 PCF;
-  static bool can_update;
+class Controller
+{
+  // static int16_t buttons16;
+  // static PCF8575 PCF;
+  // static bool can_update;
 
   static void isr();
   static void change_player_color_left(int);
@@ -23,10 +31,10 @@ class Controller{
   static void player_submit(int);
   static void dice();
   static uint8_t playeble_players();
-  
+
 public:
   static Player players[];
-  
+
   static void init();
   static void update();
 };

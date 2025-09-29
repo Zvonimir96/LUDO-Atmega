@@ -1,5 +1,5 @@
 #include "Animator.h"
-
+/*
 void Animator::start_house_exit(Position start_position, Position exit_position, Color *color, House *house){
     positions_to_update = 2;
     animation = exit_house_animation;
@@ -70,4 +70,4 @@ void Animator::update_pixel(Position position, Color color){
         default:
             break;
     }
-}
+}*/

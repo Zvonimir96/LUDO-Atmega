@@ -1,4 +1,4 @@
-#include "House.h"
+/*#include "House.h"
 
 House::House() = default;
 
@@ -20,4 +20,4 @@ void House::turn_off(uint8_t index)
 {
     Elements::house_strip.turn_off(pixels[index]);
     Elements::house_strip.show();
-}
+}*/

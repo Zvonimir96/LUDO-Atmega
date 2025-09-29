@@ -1,4 +1,4 @@
-#include "SafeHouse.h"
+/*#include "SafeHouse.h"
 
 void SafeHouse::init(uint8_t playerNumber, Color *color)
 {
@@ -34,3 +34,4 @@ void SafeHouse::turn_off()
 
     Elements::safe_house_strip.show();
 }
+*/

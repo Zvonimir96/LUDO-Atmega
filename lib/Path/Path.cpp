@@ -1,4 +1,4 @@
-#include "Path.h"
+/*#include "Path.h"
 
 void Path::turn_on(uint8_t index, Color color)
 {
@@ -18,4 +18,4 @@ void Path::init()
     default_color.set_val(150);
 
     Elements::path_strip.fill(default_color);
-}
+}*/

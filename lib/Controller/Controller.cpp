@@ -1,5 +1,5 @@
 #include "Controller.h"
-
+/*
 void Controller::init()
 {
     PCF.begin();
@@ -266,4 +266,4 @@ void Controller::update()
 
         buttons16 = temp;
     }
-}
+}*/

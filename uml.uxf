@@ -1,0 +1,13 @@
+<diagram program="umletino" version="15.1"><zoom_level>10</zoom_level><element><id>UMLClass</id><coordinates><x>130</x><y>90</y><w>210</w><h>190</h></coordinates><panel_attributes>Package::FatClass
+{Some Properties}
+--
+-id: Long
+_-ClassAttribute: Long_
+--
+#Operation(i: int): int
+/+AbstractOperation()/
+--
+Responsibilities
+-- Resp1
+*-- Resp2*</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLState</id><coordinates><x>420</x><y>380</y><w>100</w><h>40</h></coordinates><panel_attributes>state</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>380</x><y>400</y><w>120</w><h>80</h></coordinates><panel_attributes>lt=-&gt;
+self</panel_attributes><additional_attributes>100;20;100;60;20;60;10;10;40;10</additional_attributes></element></diagram>

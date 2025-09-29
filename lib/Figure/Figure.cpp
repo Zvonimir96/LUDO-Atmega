@@ -1,5 +1,5 @@
 #include "Figure.h"
-
+/*
 Figure::Figure() = default;
 
 void Figure::init(Color *color, House *house, uint8_t index)
@@ -87,3 +87,4 @@ Figure *Figure::figure_on_index(Position position)
 
     return NULL;
 }
+*/

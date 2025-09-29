@@ -1,4 +1,4 @@
-#include "Touch.h"
+/*#include "Touch.h"
 
 void Touch::init(uint8_t playerNumber, Color *color)
 {
@@ -21,4 +21,4 @@ void Touch::turn_off()
         Elements::touch_strip.turn_off(pixels[i]);
 
     Elements::touch_strip.show();
-}
+}*/

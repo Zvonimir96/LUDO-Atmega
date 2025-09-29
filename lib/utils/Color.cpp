@@ -14,32 +14,32 @@ Color::Color(uint16_t hue)
     val = 255;
 }
 
-void Color::set_hue(uint16_t hue)
+void Color::setHue(uint16_t hue)
 {
     this->hue = hue;
 }
 
-void Color::set_val(uint8_t val)
+void Color::setVal(uint8_t val)
 {
     this->val = val;
 }
 
-void Color::set_sat(uint8_t sat)
+void Color::setSat(uint8_t sat)
 {
     this->sat = sat;
 }
 
-uint16_t Color::get_hue()
+uint16_t Color::getHue()
 {
     return hue;
 }
 
-uint8_t Color::get_sat()
+uint8_t Color::getSat()
 {
     return sat;
 }
 
-uint8_t Color::get_val()
+uint8_t Color::getVal()
 {
     return val;
 }
@@ -61,4 +61,14 @@ void Color::fade()
         fade_up = false;
         val = 255;
     }
+}
+
+Color &Color::operator=(const Color &obj)
+{
+    hue = obj.hue;
+    sat = obj.sat;
+    val = obj.val;
+    fade_up = obj.fade_up;
+
+    return *this;
 }

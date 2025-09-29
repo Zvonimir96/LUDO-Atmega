@@ -1,5 +1,5 @@
 #include "Player.h"
-
+/*
 Player::Player() = default;
 
 void Player::init(uint8_t player_number)
@@ -149,4 +149,4 @@ void Player::disable()
 
     for (uint8_t i = 0; i < 4; i++)
         figures[i].disable();
-}
+}*/
