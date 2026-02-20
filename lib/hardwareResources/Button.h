@@ -5,7 +5,7 @@
 
 #include <Arduino.h>
 
-typedef void (*CallbackFunction)(uint16_t buttonBitMask);
+typedef void (*ButtonCallback)(uint16_t buttonBitMask);
 
 class Button
 {
@@ -16,12 +16,14 @@ public:
         return instance;
     }
 
-    void init(CallbackFunction callback);
+    void init(ButtonCallback callback);
     void update();
     void enablePlayerButtons(uint8_t player);
+    void enableSubmitButtons(uint8_t player);
     void disablePlayerButtons(uint8_t player);
     void enablePlayersButtons();
     void enableDice();
+    void disableDice();
     void disable();
 
 private:
@@ -34,9 +36,11 @@ private:
     uint16_t buttonsBitMask;
     uint16_t availableBitMask;
     PCF8575 PCF;
-    CallbackFunction callback;
+    ButtonCallback callback;
 
     static volatile bool canUpdate;
     static void isr();
+
+    // TODO: this will need rework. This is blocking funtion, this should be ticker
     void buzzerTone();
 };

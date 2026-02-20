@@ -1,7 +1,7 @@
 #pragma once
 
-#include "hardwareResources.h"
 #include "utils.h"
+#include "hardwareResources.h"
 #include "AnimationManager.h"
 
 class Handler
@@ -13,19 +13,31 @@ public:
         return instance;
     }
 
-    void init();
+    void init(AnimatorCallback callback);
 
     void setHouse(uint8_t player, const Color &color);
     void setSafeHouse(uint8_t player, const Color &color);
     void setPath(const Color &color);
-    void setPath(const Color &color, const uint8_t index);
-
-    void setDiceNumber(uint8_t player, uint8_t number, Color color);
+    void setHouseExit(const uint8_t index, const Color &color);
 
     void setButtonAnimation(uint8_t player, const Color &color);
+    void setSubmitAnimation(uint8_t player, const Color &color);
     void removeButtonAnimation(uint8_t player);
+    void removeSubmitAnimation(uint8_t player);
+
+    void setDiceNumber(uint8_t player, uint8_t number, Color color);
     void setDiceAnimation(const Color &color);
     void removeDiceAnimation();
+    uint8_t diceRollAnimation(uint8_t playerOnTurn, Color playerColor, uint8_t diceNumber);
+
+    void setMoveAnimation(AnimationInfo *pixels, uint8_t size);
+    void removeMoveAnimation();
+    void endMoveAnimation();
+
+    void setPixelsColor(AnimationInfo *pixel, uint8_t size);
+
+    // TODO: remove, just for test puspuse
+    void setPixelColor(StripPosition position, Color color);
 
 private:
     // Prevent instantiation

@@ -1,7 +1,6 @@
 #pragma once
-#include "Arduino.h"
 
-#define BUZZER 10
+#define BUZZER_PIN 10
 
 #define PATH_PIN 4
 #define DICE_PIN 5
@@ -13,13 +12,20 @@
 #define DICE_COUNT 9
 #define HOUSE_COUNT 16
 #define SAFE_HOUSE_COUNT 16
+#define PATH_QUATER 13
+#define HOUSE_EXIT 1
 #define TOUCH_COUNT 12
+#define STRIPS_COUNT 5
 
 #define BRIGHTNESS 50
 
-#define ANIMATION_ITERATIONS 30
-#define ANIMATION_MIN_DELAY 10
-#define ANIMATION_DELAY_INKREMENT 5
+#define UPDATE_TIME_MS 40
+
+#define SAFE_HOUSE_SAT 100
+#define PATH_SAT 0
+#define PATH_VAL 150
+
+#define INTERRUPT_PIN 2
 
 #define PLAYER1_LEFT 1 << 1
 #define PLAYER1_SUBMIT 1 << 0
@@ -39,12 +45,15 @@
 
 #define DICE_BUTTON 4096
 
-#define INTERRUPT_PIN 2
+#define NUMBER_OF_PLAYERS 4
+#define NUMBER_OF_FIGURES 4
+#define NUMBER_OF_AVAILABLE_COLORS 6
 
-#define COLORS 6
+// Number of iterations must be divisor of 6
+#define DICE_ANIMATION_NUMBER_OF_ITERATIONS 30
+#define DICE_ANIMATION_START_DELAY 10
+#define DICE_ANIMATION_DELAY_INKREMENT 5
 
-// Color
 #define UPDATE_FADE_STEP 5
-
-#define UPDATE_TIME_MS 40
 #define UPDATE_FADE_MIN 150
+#define COLOR_MAX_VALUE 255

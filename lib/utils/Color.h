@@ -1,15 +1,14 @@
 #pragma once
 
-#include "utils.h"
-
 #include <Arduino.h>
+#include "Conf.h"
 
 class Color
 {
     uint16_t hue;
     uint8_t sat;
     uint8_t val;
-    bool fade_up;
+    bool fadeUp;
 
 public:
     Color();

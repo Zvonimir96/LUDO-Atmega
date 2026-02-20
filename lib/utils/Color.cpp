@@ -2,6 +2,7 @@
 
 Color::Color()
 {
+    fadeUp = false;
     hue = 0;
     sat = 255;
     val = 255;
@@ -9,6 +10,7 @@ Color::Color()
 
 Color::Color(uint16_t hue)
 {
+    fadeUp = false;
     this->hue = hue;
     sat = 255;
     val = 255;
@@ -44,31 +46,31 @@ uint8_t Color::getVal()
     return val;
 }
 
+Color &Color::operator=(const Color &obj)
+{
+    hue = obj.hue;
+    sat = obj.sat;
+    val = obj.val;
+    fadeUp = obj.fadeUp;
+
+    return *this;
+}
+
 void Color::fade()
 {
-    if (fade_up)
+    if (fadeUp)
         val += UPDATE_FADE_STEP;
     else
         val -= UPDATE_FADE_STEP;
 
     if (val <= UPDATE_FADE_MIN)
     {
-        fade_up = true;
+        fadeUp = true;
         val = UPDATE_FADE_MIN;
     }
     else if (val >= 255)
     {
-        fade_up = false;
+        fadeUp = false;
         val = 255;
     }
-}
-
-Color &Color::operator=(const Color &obj)
-{
-    hue = obj.hue;
-    sat = obj.sat;
-    val = obj.val;
-    fade_up = obj.fade_up;
-
-    return *this;
 }

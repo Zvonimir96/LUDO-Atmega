@@ -1,54 +1,130 @@
 #include "AnimationManager.h"
 
-void AnimationManager::add(PixelInfo *pixels, uint8_t numPixels, AnimationType type)
+void AnimationManager::init(AnimatorCallback callback)
 {
-    Animation animation = Animation(pixels, numPixels, type);
-    for (uint8_t i = 0; i < animationCount; ++i)
-    {
-        Serial.println("Test");
-
-        if (animations[i] == animation)
-        {
-            animations[i] = animation;
-            Serial.println("INFO: animation edited");
-            break;
-        }
-    }
-
-    animations[animationCount++] = animation;
-
-    Serial.println("INFO: animation added");
+    this->callback = callback;
 }
 
-void AnimationManager::remove(PixelInfo *pixels, uint8_t numPixels)
+void AnimationManager::add(AnimationInfo *pixels, uint8_t numPixels, AnimationType type)
 {
-    Animation animation = Animation(pixels, numPixels, AnimationType::GLOBAL_FADE);
-    for (uint8_t i = 0; i < animationCount; ++i)
+    for (uint8_t i = 0; i < numPixels; ++i)
     {
-        if (animations[i] == animation)
+        this->pixels[animationCount + i] = pixels[i];
+        pixelsAnimation[animationCount + i] = type;
+    }
+
+    animationCount += numPixels;
+}
+
+void AnimationManager::remove(AnimationInfo *animations, uint8_t numberOfAnimations, AnimationType type)
+{
+    for (uint8_t i = 0; i < animationCount; i++)
+    {
+        for (uint8_t j = 0; j < numberOfAnimations; j++)
         {
-            for (uint8_t j = i; j < animationCount - 1; ++j)
+            if (pixels[i] == animations[j])
             {
-                animations[j] = animations[j - 1];
+                for (uint8_t x = i; x < animationCount - 1; x++)
+                {
+                    pixels[x] = pixels[x + 1];
+                    pixelsAnimation[x] = pixelsAnimation[x + 1];
+                }
+
+                animationCount--;
+                i--;
+                break;
             }
-
-            --animationCount;
-            Serial.println("INFO: animation removed");
-
-            break;
         }
     }
+}
+
+void AnimationManager::endMoveAnimation()
+{
+    // TODO: dont remove animation. Just set color
+    for (uint8_t i = 0; i < animationCount; i++)
+    {
+        if (pixelsAnimation[i] == AnimationType::MOVE)
+        {
+            strip.setColor(pixels[i].position, pixels[i].secondary, false);
+
+            for (uint8_t x = i; x < animationCount - 1; x++)
+            {
+                pixels[x] = pixels[x + 1];
+                pixelsAnimation[x] = pixelsAnimation[x + 1];
+            }
+            animationCount--;
+            i--;
+        }
+    }
+
+    strip.show();
+
+    // TODO: Raise flag
+}
+
+void AnimationManager::removeMoveAnimation()
+{
+    for (uint8_t i = 0; i < animationCount; i++)
+    {
+        if (pixelsAnimation[i] == AnimationType::MOVE)
+        {
+            strip.setColor(pixels[i].position, pixels[i].normal, false);
+
+            for (uint8_t x = i; x < animationCount - 1; x++)
+            {
+                pixels[x] = pixels[x + 1];
+                pixelsAnimation[x] = pixelsAnimation[x + 1];
+            }
+            animationCount--;
+            i--;
+        }
+    }
+
+    strip.show();
 }
 
 void AnimationManager::update()
 {
     if (animationCount > 0 && updateTime <= millis())
     {
+        globalFade.fade();
+
+        // Applay animation
         for (uint8_t i = 0; i < animationCount; ++i)
         {
-            animations[i].update();
+            switch (pixelsAnimation[i])
+            {
+            case AnimationType::GLOBAL_FADE:
+                pixels[i].primary.setVal(globalFade.getVal());
+                strip.setColor(pixels[i].position, pixels[i].primary, false);
+                break;
+
+            case AnimationType::MOVE:
+                // TODO:
+                pixels[i].primary.fade();
+                strip.setColor(pixels[i].position, pixels[i].primary, false);
+
+                // He knows how much neopixels are in animation
+
+                // Reach start color.
+                // Activate next.
+
+                // If fade to min and if has secondary color change color
+
+                // If cancle animation true -> go ro desired color
+
+                // If desired color reached -> cancle yourself
+
+                break;
+
+            default:
+                break;
+            }
         }
+
+        // Show animation
         strip.show();
+
         updateTime = millis() + UPDATE_TIME_MS;
     }
 }

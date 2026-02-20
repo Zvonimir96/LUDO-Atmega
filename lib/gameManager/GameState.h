@@ -1,7 +1,10 @@
 #pragma once
 
-enum class StripE
+enum class GameState
 {
     INIT = 0,
-    SELECT_COLOR = 1
+    COLOR_SELECTION = 1,
+    GAME = 2,
+    DICE_ROLL = 3,
+    WAIT_FOR_CALLBACK = 4
 };

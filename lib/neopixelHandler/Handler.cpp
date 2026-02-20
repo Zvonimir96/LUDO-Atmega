@@ -1,15 +1,16 @@
 #include "Handler.h"
 
-void Handler::init()
+void Handler::init(AnimatorCallback callback)
 {
     strip.init();
+    animationManager.init(callback);
 }
 
 void Handler::setHouse(uint8_t player, const Color &color)
 {
-    player *= 4;
+    player *= NUMBER_OF_PLAYERS;
 
-    for (uint8_t i = 0; i < 4; i++)
+    for (uint8_t i = 0; i < NUMBER_OF_PLAYERS; i++)
     {
         strip.setColor(StripE::HOUSE, player + i, color, false);
     }
@@ -19,9 +20,9 @@ void Handler::setHouse(uint8_t player, const Color &color)
 
 void Handler::setSafeHouse(uint8_t player, const Color &color)
 {
-    player *= 4;
+    player *= NUMBER_OF_PLAYERS;
 
-    for (uint8_t i = 0; i < 4; i++)
+    for (uint8_t i = 0; i < NUMBER_OF_PLAYERS; i++)
     {
         strip.setColor(StripE::S_HOUSE, player + i, color, false);
     }
@@ -39,9 +40,9 @@ void Handler::setPath(const Color &color)
     strip.show(StripE::PATH);
 }
 
-void Handler::setPath(const Color &color, const uint8_t index)
+void Handler::setHouseExit(const uint8_t index, const Color &color)
 {
-    strip.setColor(StripE::PATH, index * 13 + 1, color, 1);
+    strip.setColor(StripE::PATH, index * PATH_QUATER + HOUSE_EXIT, color);
 }
 
 void Handler::setDiceNumber(uint8_t player, uint8_t number, Color color)
@@ -92,39 +93,60 @@ void Handler::setButtonAnimation(uint8_t player, const Color &color)
 {
     player *= 3;
 
-    PixelInfo pixels[3];
+    AnimationInfo pixels[3];
     for (uint8_t i = 0; i < 3; i++)
     {
-        pixels[i] = PixelInfo(StripPosition(StripE::BUTTONS, i + player), Color(color));
+        pixels[i] = AnimationInfo(StripPosition(StripE::BUTTONS, i + player), color);
     }
 
     animationManager.add(pixels, 3, AnimationType::GLOBAL_FADE);
+}
+
+void Handler::setSubmitAnimation(uint8_t player, const Color &color)
+{
+    player *= 3;
+
+    AnimationInfo pixels[] = {AnimationInfo(StripPosition(StripE::BUTTONS, 1 + player), color)};
+
+    animationManager.add(pixels, 1, AnimationType::GLOBAL_FADE);
 }
 
 void Handler::removeButtonAnimation(uint8_t player)
 {
     player *= 3;
 
-    PixelInfo pixels[3];
+    AnimationInfo pixels[3];
     Color blackColor;
     blackColor.setVal(0);
 
     for (uint8_t i = 0; i < 3; i++)
     {
-        pixels[i] = PixelInfo(StripPosition(StripE::BUTTONS, i + player));
+        pixels[i] = AnimationInfo(StripPosition(StripE::BUTTONS, i + player));
         strip.setColor(StripE::BUTTONS, i + player, blackColor, false);
     }
 
     strip.show(StripE::BUTTONS);
-    animationManager.remove(pixels, 3);
+    animationManager.remove(pixels, 3, AnimationType::GLOBAL_FADE);
+}
+
+void Handler::removeSubmitAnimation(uint8_t player)
+{
+    player *= 3;
+
+    AnimationInfo pixels[1] = {AnimationInfo(StripPosition(StripE::BUTTONS, 1 + player))};
+    Color blackColor;
+    blackColor.setVal(0);
+
+    strip.show(StripE::BUTTONS);
+    animationManager.remove(pixels, 3, AnimationType::GLOBAL_FADE);
 }
 
 void Handler::setDiceAnimation(const Color &color)
 {
-    PixelInfo pixels[9];
+    AnimationInfo pixels[9];
     for (uint8_t i = 0; i < 9; i++)
     {
-        pixels[i] = PixelInfo(StripPosition(StripE::DICE, i), Color(color));
+        pixels[i] = AnimationInfo(StripPosition(StripE::DICE, i), Color(color));
     }
 
     animationManager.add(pixels, 9, AnimationType::GLOBAL_FADE);
@@ -132,13 +154,65 @@ void Handler::setDiceAnimation(const Color &color)
 
 void Handler::removeDiceAnimation()
 {
-    PixelInfo pixels[9];
+    AnimationInfo pixels[9];
     for (uint8_t i = 0; i < 9; i++)
     {
-        pixels[i] = PixelInfo(StripPosition(StripE::DICE, i));
+        pixels[i] = AnimationInfo(StripPosition(StripE::DICE, i));
     }
 
-    animationManager.remove(pixels, 9);
+    animationManager.remove(pixels, 9, AnimationType::GLOBAL_FADE);
     strip.clear(StripE::DICE);
     strip.show(StripE::DICE);
+}
+
+void Handler::setPixelsColor(AnimationInfo *pixel, uint8_t size)
+{
+    for (uint8_t i = 0; i < size; i++)
+    {
+        strip.setColor(pixel[i].position.strip, pixel[i].position.index, pixel[i].primary, false);
+    }
+
+    strip.show();
+}
+
+void Handler::setPixelColor(StripPosition position, Color color)
+{
+    strip.setColor(position.strip, position.index, color);
+}
+
+void Handler::setMoveAnimation(AnimationInfo *pixels, uint8_t size)
+{
+    setPixelsColor(pixels, size);
+    animationManager.add(pixels, size, AnimationType::MOVE);
+}
+
+void Handler::removeMoveAnimation()
+{
+    animationManager.removeMoveAnimation();
+}
+
+void Handler::endMoveAnimation()
+{
+    animationManager.endMoveAnimation();
+}
+
+uint8_t Handler::diceRollAnimation(uint8_t playerOnTurn, Color playerColor, uint8_t diceNumber)
+{
+    setDiceNumber(playerOnTurn, diceNumber, playerColor);
+
+    // Dice animation
+    int sleep = DICE_ANIMATION_START_DELAY;
+    for (uint8_t i = 0; i < DICE_ANIMATION_NUMBER_OF_ITERATIONS; i++)
+    {
+        diceNumber++;
+        if (diceNumber > 6)
+            diceNumber = 1;
+
+        setDiceNumber(playerOnTurn, diceNumber, playerColor);
+        delay(sleep);
+
+        sleep += DICE_ANIMATION_DELAY_INKREMENT;
+    }
+
+    return diceNumber;
 }
