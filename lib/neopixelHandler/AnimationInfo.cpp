@@ -1,3 +1,7 @@
+/**
+ * @file AnimationInfo.cpp
+ * @brief Implementation of AnimationInfo animation data structure
+ */
 #include "AnimationInfo.h"
 
 bool AnimationInfo::operator==(const AnimationInfo &other) const

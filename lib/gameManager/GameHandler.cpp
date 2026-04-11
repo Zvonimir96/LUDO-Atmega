@@ -1,34 +1,44 @@
+/**
+ * @file GameHandler.cpp
+ * @brief Implementation of GameHandler - main game logic and state machine
+ *
+ * Handles player turns, dice rolls, move validation, figure capturing,
+ * animation coordination, and state transitions for the LUDO game.
+ */
 #include "GameHandler.h"
-
-GameHandler &gameHandler = GameHandler::getInstance();
 
 void GameHandler::buttonCallback(uint16_t button)
 {
+    GameHandler &instance = GameHandler::getInstance();
     uint8_t player = 0;
     uint16_t temp = button;
 
+    // Determine which player pressed a button by shifting 3 bits at a time
+    // (each player has 3 buttons: submit, left, right)
     while (temp >>= 3)
     {
         ++player;
     }
 
-    // Dice action
+    // Bit 12 (4096) = dice button, mapped to player index >= 4
     if (player >= NUMBER_OF_PLAYERS)
     {
-        gameHandler.diceAction();
+        instance.diceAction();
         return;
     }
 
+    // Extract the 3-bit button group for this player:
+    // bit 0 = submit, bit 1 = left, bit 2 = right
     switch (button >> player * 3)
     {
     case 1:
-        gameHandler.playerActionSubmit(player);
+        instance.playerActionSubmit(player);
         break;
     case 2:
-        gameHandler.playerActionLeft(player);
+        instance.playerActionLeft(player);
         break;
     case 4:
-        gameHandler.playerActionRight(player);
+        instance.playerActionRight(player);
         break;
     default:
         break;
@@ -37,7 +47,7 @@ void GameHandler::buttonCallback(uint16_t button)
 
 void GameHandler::animationCallback()
 {
-    gameHandler.nextPlayer();
+    GameHandler::getInstance().nextPlayer();
 }
 
 void GameHandler::init()
@@ -98,6 +108,7 @@ void GameHandler::changeColorLeft(uint8_t player)
     int8_t playerColorIndex = players[player].getPlayerColorIndex();
     bool colorAvailable;
 
+    // Cycle forward through colors, skipping any already taken by other players
     do
     {
         if (++playerColorIndex >= NUMBER_OF_AVAILABLE_COLORS)
@@ -125,6 +136,7 @@ void GameHandler::changeColorRight(uint8_t player)
     int8_t playerColorIndex = players[player].getPlayerColorIndex();
     bool colorAvailable;
 
+    // Cycle backward through colors, skipping any already taken by other players
     do
     {
         if (--playerColorIndex < 0)
@@ -164,7 +176,7 @@ void GameHandler::changeFigureLeft()
 
         if (canFigureMove(selectedFigure))
         {
-            players[playerOnTurn].setSeletedFigre(selectedFigure);
+            players[playerOnTurn].setSelectedFigure(selectedFigure);
             setMoveAnimation();
             return;
         }
@@ -185,7 +197,7 @@ void GameHandler::changeFigureRight()
 
         if (canFigureMove(selectedFigure))
         {
-            players[playerOnTurn].setSeletedFigre(selectedFigure);
+            players[playerOnTurn].setSelectedFigure(selectedFigure);
             setMoveAnimation();
             return;
         }
@@ -254,8 +266,7 @@ void GameHandler::playerActionSubmit(uint8_t player)
 
     case GameState::GAME:
     {
-        // TODO: Clean this up!
-        // Check if others player have figure on figure end position
+        // Check if an opponent's figure occupies the target position (capture rule)
         uint8_t playerIndex;
         if (playerFigureOnPosition(moveEndPosition, &playerIndex))
         {
@@ -264,11 +275,11 @@ void GameHandler::playerActionSubmit(uint8_t player)
             {
                 if (players[playerIndex].figures[i] == moveEndPosition)
                 {
-                    // Move figure to house
+                    // Send captured figure back to its house
                     players[playerIndex].figures[i].index = i;
                     players[playerIndex].figures[i].strip = StripE::HOUSE;
 
-                    // Visual efect
+                    // Update LED to show figure back in house
                     StripPosition figurePosition = players[playerIndex].figures[i];
                     figurePosition.index += playerIndex * NUMBER_OF_FIGURES;
                     neopixelHandler.setPixelColor(figurePosition, players[playerIndex].getPlayerColor());
@@ -278,6 +289,7 @@ void GameHandler::playerActionSubmit(uint8_t player)
             }
         }
 
+        // Update current player's figure to the new position
         players[playerOnTurn].figures[players[playerOnTurn].getSelectedFigureIndex()].strip = moveEndPosition.strip;
         players[playerOnTurn].figures[players[playerOnTurn].getSelectedFigureIndex()].index = moveEndPosition.index;
 
@@ -285,6 +297,7 @@ void GameHandler::playerActionSubmit(uint8_t player)
 
         if (diceNumber == 6)
         {
+            // Rolling 6 grants another turn for the same player
             // Disable buttons from player
             button.disablePlayerButtons(playerOnTurn);
             neopixelHandler.removeButtonAnimation(playerOnTurn);
@@ -308,7 +321,8 @@ void GameHandler::playerActionSubmit(uint8_t player)
         // gameState = GameState::WAIT_FOR_CALLBACK;
     }
     case GameState::DICE_ROLL:
-        // If player hase all of its figures in House, player can roll dice additional 2 times
+        // Rule: if all figures are in house, player gets up to 3 total rolls
+        // to try for a 6 (initial roll + 2 extra attempts)
         if (players[playerOnTurn].allFiguresInHouse() && numberOfPlayerRolls < 2)
         {
             numberOfPlayerRolls++;
@@ -366,7 +380,7 @@ void GameHandler::startGame()
             neopixelHandler.setHouse(i, blackColor);
             neopixelHandler.setSafeHouse(i, blackColor);
 
-            // Clear safe house enterence
+            // Clear safe house entrance
             Color pathColor;
             pathColor.setSat(PATH_SAT);
             pathColor.setVal(PATH_VAL);
@@ -382,7 +396,7 @@ void GameHandler::nextPlayer()
 {
     numberOfPlayerRolls = 0;
 
-    uint8_t previusPlayer = playerOnTurn;
+    uint8_t previousPlayer = playerOnTurn;
 
     do
     {
@@ -398,8 +412,8 @@ void GameHandler::nextPlayer()
     } while (true);
 
     // Disable buttons from previous player
-    button.disablePlayerButtons(previusPlayer);
-    neopixelHandler.removeButtonAnimation(previusPlayer);
+    button.disablePlayerButtons(previousPlayer);
+    neopixelHandler.removeButtonAnimation(previousPlayer);
 
     // Set initial dice state for new player
     neopixelHandler.removeDiceAnimation();
@@ -423,7 +437,7 @@ void GameHandler::rollDice()
     {
         if (canFigureMove(i))
         {
-            players[playerOnTurn].setSeletedFigre(i);
+            players[playerOnTurn].setSelectedFigure(i);
             setMoveAnimation();
             gameState = GameState::GAME;
 
@@ -434,10 +448,10 @@ void GameHandler::rollDice()
         }
     }
 
-    // Non of figures can move, enable submit button
+    // No figures can move — enable only submit button to skip turn
     neopixelHandler.setSubmitAnimation(playerOnTurn, players[playerOnTurn].getPlayerColor());
     button.enableSubmitButtons(playerOnTurn);
-    players[playerOnTurn].setSeletedFigre(-1);
+    players[playerOnTurn].setSelectedFigure(-1);
 }
 
 void GameHandler::setMoveAnimation()
@@ -445,11 +459,11 @@ void GameHandler::setMoveAnimation()
     AnimationInfo *movePixels = nullptr;
     uint8_t numberOfAnimations;
 
-    //  And other secundary collors
+    //  Build animation sequence based on figure's current strip
     switch (players[playerOnTurn].getSelectedFigure().strip)
     {
     case StripE::HOUSE:
-        // Set initial state and prepere animation information for exit house move
+        // HOUSE -> PATH exit: 2-step animation (leave house + appear on path)
         numberOfAnimations = 2;
         movePixels = new AnimationInfo[numberOfAnimations];
 
@@ -487,7 +501,7 @@ void GameHandler::setMoveAnimation()
     case StripE::PATH:
     case StripE::S_HOUSE:
     {
-        // Set initial state and prepere animation information for simple move
+        // PATH/S_HOUSE move: animate each step along the path (1 origin + diceNumber steps)
         numberOfAnimations = 1 + diceNumber;
         movePixels = new AnimationInfo[numberOfAnimations];
         movePixels[0].position = players[playerOnTurn].getSelectedFigure();
@@ -499,7 +513,7 @@ void GameHandler::setMoveAnimation()
 
         if (movePixels[0].position.strip == StripE::PATH)
         {
-            // Check if player is on house enterence
+            // Check if player is on house entrance
             if ((movePixels[0].position.index - HOUSE_EXIT) % PATH_QUATER == 0)
             {
                 uint8_t playerHouse = (movePixels[0].position.index - HOUSE_EXIT) / PATH_QUATER;
@@ -535,6 +549,7 @@ void GameHandler::setMoveAnimation()
             movePixels[0].secondary.setSat(SAFE_HOUSE_SAT);
         }
 
+        // Gradually increase brightness for each step along the path
         uint8_t fadeStep = (COLOR_MAX_VALUE - UPDATE_FADE_MIN) / diceNumber;
 
         for (uint8_t i = 1; i <= diceNumber; i++)
@@ -545,22 +560,22 @@ void GameHandler::setMoveAnimation()
             movePixels[i].position = players[playerOnTurn].getSelectedFigure();
             movePixels[i].position.index += i;
 
-            // Check if next position overflows path lenght
+            // Wrap around if position exceeds path length
             if (movePixels[i].position.index >= PATH_COUNT)
             {
                 movePixels[i].position.index -= PATH_COUNT;
                 players[playerOnTurn].setFigurePassedZeroMark(players[playerOnTurn].getSelectedFigureIndex(), true);
             }
 
-            // If figure can go into safe house
-            uint8_t playerSafeHouseEnterance = playerOnTurn * PATH_QUATER;
+            // Transition from PATH to S_HOUSE if figure has completed a full lap
+            uint8_t playerSafeHouseEntrance = playerOnTurn * PATH_QUATER;
 
             if (movePixels[i].position.strip == StripE::PATH &&
                 players[playerOnTurn].didFigurePassedZeroMark(players[playerOnTurn].getSelectedFigureIndex()) &&
-                movePixels[i].position.index > playerSafeHouseEnterance)
+                movePixels[i].position.index > playerSafeHouseEntrance)
             {
                 movePixels[i].position.strip = StripE::S_HOUSE;
-                movePixels[i].position.index = movePixels[i].position.index - playerSafeHouseEnterance - 1;
+                movePixels[i].position.index = movePixels[i].position.index - playerSafeHouseEntrance - 1;
             }
 
             if (movePixels[i].position.strip == StripE::PATH)
@@ -572,7 +587,7 @@ void GameHandler::setMoveAnimation()
                     movePixels[i].secondary = players[playerFigure].getPlayerColor();
                 }
 
-                // Any house enterence of active player TODO: Make just for active players
+                // House entrance of active player
                 else if ((movePixels[i].position.index - HOUSE_EXIT) % PATH_QUATER == 0)
                 {
                     uint8_t playerHouse = (movePixels[i].position.index - HOUSE_EXIT) / PATH_QUATER;
@@ -624,7 +639,7 @@ void GameHandler::setMoveAnimation()
         break;
     }
 
-    // Eneble move animation
+    // Enable move animation
     neopixelHandler.setMoveAnimation(movePixels, numberOfAnimations);
     delete[] movePixels;
 }
@@ -637,6 +652,8 @@ bool GameHandler::canFigureMove(uint8_t selectedFigure)
     {
     case StripE::HOUSE:
     {
+        // Rule: figure can only leave house with a roll of 6,
+        // and the exit position must not be occupied by own figure
         StripPosition endPosition;
 
         endPosition.strip = StripE::PATH;
@@ -650,14 +667,14 @@ bool GameHandler::canFigureMove(uint8_t selectedFigure)
     }
     case StripE::S_HOUSE:
     {
-        // Does move overflows house size
+        // Rule: cannot overshoot the safe house end
         if (position.index + diceNumber >= NUMBER_OF_FIGURES)
+
         {
             return false;
         }
 
-        // Check if players figures are in between start and end position in house
-        // This move is not valid by the rules
+        // Rule: cannot jump over own figures inside safe house
         for (uint8_t i = 0; i < diceNumber; i++)
         {
             StripPosition nextPosition = StripPosition(StripE::S_HOUSE, position.index + i + 1);
@@ -672,24 +689,24 @@ bool GameHandler::canFigureMove(uint8_t selectedFigure)
     }
     case StripE::PATH:
     {
-        StripPosition endtPosition = position;
-        endtPosition.index += diceNumber;
+        StripPosition endPosition = position;
+        endPosition.index += diceNumber;
 
-        uint8_t playerSafeHouseEnterance = playerOnTurn * PATH_QUATER;
+        uint8_t playerSafeHouseEntrance = playerOnTurn * PATH_QUATER;
 
-        // If figure can go into safe house
-        if (endtPosition.index > playerSafeHouseEnterance && players[playerOnTurn].didFigurePassedZeroMark(selectedFigure))
+        // Rule: figure must have completed a full lap (passed zero mark)
+        // before it can enter the safe house
+        if (endPosition.index > playerSafeHouseEntrance && players[playerOnTurn].didFigurePassedZeroMark(selectedFigure))
         {
-            uint8_t numberOfStesps = endtPosition.index - playerSafeHouseEnterance;
+            uint8_t numberOfSteps = endPosition.index - playerSafeHouseEntrance;
 
-            if (numberOfStesps > NUMBER_OF_FIGURES)
+            if (numberOfSteps > NUMBER_OF_FIGURES)
             {
                 return false;
             }
 
-            // Check if players figures are in between start and end position in house
-            // This move is not valid by the rules
-            for (uint8_t i = 0; i < numberOfStesps; i++)
+            // Rule: cannot jump over own figures when entering safe house
+            for (uint8_t i = 0; i < numberOfSteps; i++)
             {
                 StripPosition nextPosition = StripPosition(StripE::S_HOUSE, i);
 
@@ -703,16 +720,16 @@ bool GameHandler::canFigureMove(uint8_t selectedFigure)
         }
         else
         {
-            // Check if end position overflows path lenght
-            if (endtPosition.index >= PATH_COUNT)
+            // Check if end position overflows path length (wrap around)
+            if (endPosition.index >= PATH_COUNT)
             {
-                endtPosition.index -= PATH_COUNT;
+                endPosition.index -= PATH_COUNT;
             }
 
-            // It is not posible to have two figures at same place
+            // Rule: cannot land on own figure
             for (uint8_t figure = 0; figure < NUMBER_OF_FIGURES; figure++)
             {
-                if (players[playerOnTurn].figures[figure] == endtPosition)
+                if (players[playerOnTurn].figures[figure] == endPosition)
                 {
                     return false;
                 }

@@ -1,3 +1,7 @@
+/**
+ * @file Strip.cpp
+ * @brief Implementation of Strip NeoPixel LED controller
+ */
 #include "Strip.h"
 
 void Strip::init()

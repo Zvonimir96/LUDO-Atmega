@@ -1,3 +1,7 @@
+/**
+ * @file Button.cpp
+ * @brief Implementation of Button input handler via PCF8575
+ */
 #include "Button.h"
 
 volatile bool Button::canUpdate = false;

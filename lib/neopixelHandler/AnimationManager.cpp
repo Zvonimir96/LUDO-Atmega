@@ -1,3 +1,7 @@
+/**
+ * @file AnimationManager.cpp
+ * @brief Implementation of AnimationManager LED animation coordinator
+ */
 #include "AnimationManager.h"
 
 void AnimationManager::init(AnimatorCallback callback)
@@ -89,7 +93,7 @@ void AnimationManager::update()
     {
         globalFade.fade();
 
-        // Applay animation
+        // Apply animation
         for (uint8_t i = 0; i < animationCount; ++i)
         {
             switch (pixelsAnimation[i])

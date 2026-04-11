@@ -1,3 +1,7 @@
+/**
+ * @file Handler.cpp
+ * @brief Implementation of Handler high-level LED control interface
+ */
 #include "Handler.h"
 
 void Handler::init(AnimatorCallback callback)
@@ -211,7 +215,7 @@ uint8_t Handler::diceRollAnimation(uint8_t playerOnTurn, Color playerColor, uint
         setDiceNumber(playerOnTurn, diceNumber, playerColor);
         delay(sleep);
 
-        sleep += DICE_ANIMATION_DELAY_INKREMENT;
+        sleep += DICE_ANIMATION_DELAY_INCREMENT;
     }
 
     return diceNumber;

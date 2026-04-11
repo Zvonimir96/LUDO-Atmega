@@ -1,3 +1,7 @@
+/**
+ * @file Color.cpp
+ * @brief Implementation of Color HSV color representation
+ */
 #include "Color.h"
 
 Color::Color()
