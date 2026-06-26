@@ -1,4 +1,4 @@
-# CJNS Kontroler - Electronic LUDO Game
+# CJNS Controler - Electronic LUDO Game
 
 An embedded C++ implementation of the classic LUDO board game for ATmega328, featuring NeoPixel LED visualization and interactive gameplay.
 
